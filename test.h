@@ -86,20 +86,3 @@ float mult_float(float a, float b){
     return  result_flaot;
 }
 
-
-
-
-// int main(){
-
-
-//     float a = 52.762360 ;
-//     float b = 44.651878;
-//     float result ;
-//     float comparaison = 27.5625 ;
-
-
-//     result = mult_float(a,b);
-
-//     printf("calcul : %f\n", result);
-
-// }

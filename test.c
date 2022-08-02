@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "test.h"
 
-#define nbr_test 100
+#define nbr_test 1000
 
 int main(){
     srand(time(NULL)); 
@@ -13,12 +13,13 @@ int main(){
         float b = (float)rand()/((float)RAND_MAX/127);
 
         float   reference = a * b;
-        float* result = mult_float(&a,&b); 
+        float result = mult_float(a,b); 
         
-        if((a*b) != *result)
+        if(abs(reference - result) > 0.1)
         {
             printf("Attended result : %f\n", reference);
-            printf("Result obtained : %f\n", *result);
+            printf("Result obtained : %f\n", result);
+            printf("\n\n");
         }
 
 

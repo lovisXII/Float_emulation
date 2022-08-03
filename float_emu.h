@@ -13,7 +13,7 @@ float mult_float(float a, float b){
     unsigned int b_copy = *((unsigned int*) &b) ;
 
 
-
+    
     unsigned long int mantice_a ;
     unsigned long int mantice_b ;
     
@@ -86,3 +86,6 @@ float mult_float(float a, float b){
     return  result_flaot;
 }
 
+float add_float(float a, float b){
+    
+}

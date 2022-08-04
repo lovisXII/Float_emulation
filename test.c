@@ -28,8 +28,8 @@
 // }
 
 int main(){
-    float a = 1.25 ;
-    float b = -2.25 ;
+    float a = 1.63 ;
+    float b = -1.63 ;
     float c = a + b ;
     unsigned int a_copy = *((unsigned int*) &a);
     unsigned int b_copy = *((unsigned int*) &b);
@@ -73,25 +73,32 @@ int main(){
     mantice_a |= 0x800000 ;
     mantice_b |= 0x800000 ;
 
+
     unsigned int result_exponent ;
     unsigned int mantice_a_new = mantice_a  ;
     unsigned int mantice_b_new = mantice_b ;
 
-
+    
     //looking for the lowest exponent
     // need to nor
     if(sign_a == sign_b){
 
-        printf("\ndiff exp : %d\n", exposant_a - exposant_b) ;
-        if((exposant_a - exposant_b) > 0) // e_x>e_b
+        printf("\ndiff exp : %d\n", (exposant_a - exposant_b) ) ;
+        if((exposant_a > exposant_b)) // e_x>e_b
         {
+        printf("A great \n") ;
             result_exponent = exposant_a  ;
             mantice_b_new   = mantice_b >> (exposant_a - exposant_b) ; 
         }   
-        else
+        else if(exposant_b > exposant_a)
         {
+        printf("B great \n") ;
             result_exponent = exposant_b ;
             mantice_a_new   = mantice_a >> (exposant_b - exposant_a) ;
+        }
+        else // exponent are the same
+        {
+            result_exponent = exposant_a ; // doesnt matter we can take any of it   
         }
         printf("mantice a after : %x\n", mantice_a_new);
         printf("mantice b after : %x\n", mantice_b_new);
@@ -122,20 +129,24 @@ int main(){
         unsigned int mantice_result;
         unsigned int sign_result;
 
-        if((exposant_a - exposant_b) > 0) // e_x>e_b
+        if((exposant_a > exposant_b)) // e_x>e_b
         {
             result_exponent = exposant_a  ;
             mantice_b_new   = mantice_b >> (exposant_a - exposant_b) ; 
             printf("A IS GREATER\n");
         }   
-        else
+        else if(exposant_b > exposant_a)
         {
             result_exponent = exposant_b ;
             mantice_a_new   = mantice_a >> (exposant_b - exposant_a) ;
             printf("B IS GREATER\n");
 
         }
-
+        else{
+            printf("OPPGJEOGHZOHG GREATER\n");
+            result_exponent = exposant_b ;
+            
+        }
         printf("mantice a after : %x\n", mantice_a_new);
         printf("mantice b after : %x\n", mantice_b_new);
 
@@ -167,7 +178,7 @@ int main(){
         else // case where a is pos, so b neg
             mantice_result = mantice_a_new + ((~mantice_b_new+1) & 0x7FFFFF) ;
 
-        printf("Mantice result is : %x\n",(~mantice_b_new+1) );
+        printf("Mantice result is : %x\n",mantice_result );
 
         // Mantice result can overflow
         // So been on 24 bits, in this case we want to keep only the msb

@@ -28,8 +28,8 @@
 // }
 
 int main(){
-    float a = -1.63 ;
-    float b = 1.63 ;
+    float a = 5.3 ;
+    float b = 10 ;
     float c = a + b ;
     unsigned int a_copy = *((unsigned int*) &a);
     unsigned int b_copy = *((unsigned int*) &b);
@@ -69,6 +69,12 @@ int main(){
 
     printf("result expected is :%x\n\n", c_copy);
 
+    /* 
+        The mantice design the part after the coma,
+        for example if the mantice of a is 0101, it means a is :
+        a = 1.010
+        So we "normalise" a by doing a or with 0x800000
+    */
 
     mantice_a |= 0x800000 ;
     mantice_b |= 0x800000 ;
@@ -79,8 +85,15 @@ int main(){
     unsigned int mantice_b_new = mantice_b ;
 
     
-    //looking for the lowest exponent
-    // need to nor
+    /* 
+        looking for the lowest exponent
+        to shift the mantice of the number with the lowest exponent
+        for instance :
+        a = 1.0101*2**3
+        b = 0.0011*2**4
+        a has the lowest exponent, so we need to rewritte a as :
+        a = 0.10101*2**4
+    */
     if(sign_a == sign_b){
 
         printf("\ndiff exp : %d\n", (exposant_a - exposant_b) ) ;
@@ -102,26 +115,39 @@ int main(){
         }
         printf("mantice a after : %x\n", mantice_a_new);
         printf("mantice b after : %x\n", mantice_b_new);
+        /*
+        Second step is to perform the addition of the 2 mantice, the problem is that the result is on 25 bits
+        and we only want 23.
+        
+        
+        It can be on 25 bits because of the normalisation with 0x800000.
 
+        Indeed both mantice are 23 bits so will normalization it becomes 24 and addition
+        can overflow, leading to this 25 bits.
+
+        We want to keep the msb. If the mantice has overflow it means we must reajust the exponent.
+        Example :
+        mantice_result = 1.0110 -> 0.10110*2
+        */
         unsigned int mantice_result =  mantice_a_new + mantice_b_new ;
         
         printf("Mantice result is : %x\n",mantice_result);
 
-        // Mantice result can overflow
-        // So been on 24 bits, in this case we want to keep only the msb
-
-        if((mantice_result >>24 ) == 1 && (exposant_a != exposant_b)){
-            printf("expo are equals\n");
-            mantice_result = mantice_result >> 1;
-        }
-        else if((mantice_result >>24 ) == 1 && (exposant_a == exposant_b))
+        if((mantice_result >> 25 == 1))
         {
-            result_exponent += 1;
-            mantice_result = (mantice_result >> 1) & 0x7FFFFF ;
+            result_exponent +=2 ;
+             mantice_result = (mantice_result >> 2) & 0x7FFFFF;
         }
+        else if ((mantice_result >> 24 == 1))
+        {
+            result_exponent ++ ;
+            mantice_result = (mantice_result >> 1) & 0x7FFFFF;
+        }   
         else{
             mantice_result &= 0x7FFFFF ;
         }
+
+        
 
         printf(" result is :\n result_exp : %x\n result mantice : %x\n", result_exponent, mantice_result);
         int result = mantice_result | (result_exponent << 23) | (sign_a << 31);

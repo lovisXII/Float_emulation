@@ -28,8 +28,8 @@
 // }
 
 int main(){
-    float a = 1.63 ;
-    float b = -1.63 ;
+    float a = -1.63 ;
+    float b = 1.63 ;
     float c = a + b ;
     unsigned int a_copy = *((unsigned int*) &a);
     unsigned int b_copy = *((unsigned int*) &b);
@@ -110,16 +110,24 @@ int main(){
         // Mantice result can overflow
         // So been on 24 bits, in this case we want to keep only the msb
 
-        if((mantice_result >>24 ) == 1)
+        if((mantice_result >>24 ) == 1 && (exposant_a != exposant_b)){
+            printf("expo are equals\n");
             mantice_result = mantice_result >> 1;
-        else
+        }
+        else if((mantice_result >>24 ) == 1 && (exposant_a == exposant_b))
+        {
+            result_exponent += 1;
+            mantice_result = (mantice_result >> 1) & 0x7FFFFF ;
+        }
+        else{
             mantice_result &= 0x7FFFFF ;
+        }
 
         printf(" result is :\n result_exp : %x\n result mantice : %x\n", result_exponent, mantice_result);
         int result = mantice_result | (result_exponent << 23) | (sign_a << 31);
         printf("resultat calculated is : %x\n", result);
         float result_est = *((float*) &result);
-        printf("result expected in float : %f\n", result_est);
+        printf("result got in float : %f\n", result_est);
     }
     else{
         printf("neg and sub nbres\n");
@@ -182,6 +190,7 @@ int main(){
 
         // Mantice result can overflow
         // So been on 24 bits, in this case we want to keep only the msb
+
 
         if((mantice_result >>24 ) == 1)
             mantice_result = mantice_result >> 1;

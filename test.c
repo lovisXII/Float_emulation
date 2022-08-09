@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "float_emu.h"
 
-#define nbr_test 1000
+#define nbr_test 10000
 
 // int main(){
 //     srand(time(NULL)); 
@@ -28,8 +28,21 @@
 // }
 
 int main(){
-    float a = 5.3 ;
-    float b = 10 ;
+    // for(int i = 0 ; i < nbr_test ; i ++)
+    // {
+
+    //     float a = (float)rand()/((float)RAND_MAX/127);
+    //     float b = (float)rand()/((float)RAND_MAX/127);
+    //     float c = a + b ;
+    //     if(add_float(a,b) - c > 0.01)
+    //     printf("\n result got is %f\nexpected was %f\n",add_float(a,b),c );
+    // }
+    // return 0;
+    int test = 0x1e45a2;
+    printf("kfapjapfj: %x\n",~test+1 );
+    float a = 1.6559;
+    float b = -1.2365;
+
     float c = a + b ;
     unsigned int a_copy = *((unsigned int*) &a);
     unsigned int b_copy = *((unsigned int*) &b);
@@ -67,7 +80,14 @@ int main(){
     printf(" b is :\n sign : %x\n exposant : %x\n mantice : %x\n\n", sign_b, exposant_b ,mantice_b);
 
 
+    unsigned int mantice_c = (c_copy & 0x7FFFFF)   ; 
+    unsigned int exposant_c = (c_copy >> 23) & 0xFF; 
+    unsigned int sign_c =(c_copy >> 31) & 0x1;
+
+
     printf("result expected is :%x\n\n", c_copy);
+    printf(" result expected is :\n sign : %x\n exposant : %x\n mantice : %x\n\n", sign_c, exposant_c ,mantice_c);
+
 
     /* 
         The mantice design the part after the coma,
@@ -160,73 +180,50 @@ int main(){
         printf("\ndiff exp : %d\n", exposant_a - exposant_b) ;
         
         
-        unsigned int mantice_result;
+        unsigned long mantice_result;
         unsigned int sign_result;
 
         if((exposant_a > exposant_b)) // e_x>e_b
         {
             result_exponent = exposant_a  ;
-            mantice_b_new   = mantice_b >> (exposant_a - exposant_b) ; 
-            printf("A IS GREATER\n");
+            mantice_b_new   = mantice_b >> (exposant_a - exposant_b) ;
         }   
         else if(exposant_b > exposant_a)
         {
             result_exponent = exposant_b ;
             mantice_a_new   = mantice_a >> (exposant_b - exposant_a) ;
-            printf("B IS GREATER\n");
 
         }
         else{
-            printf("OPPGJEOGHZOHG GREATER\n");
             result_exponent = exposant_b ;
             
         }
         printf("mantice a after : %x\n", mantice_a_new);
         printf("mantice b after : %x\n", mantice_b_new);
 
-        // Issue with doing the sub directly
-        // The sub will change the number on 32 bits so too much 1
-        // I change manually the number as negative one using Ca2
-
-        /*
-        An example will talk more :
-        lets say a = 1.25 and b = -0.25
-
-        So the mantice of a is : 01
-        The mantice of b is : 0
-        So we can write (i dont write the exponent value but you can calculate it) :
-        a = 1.01
-        b = 0.01
-        a - b should be 1.0
-        But this is what happend :
-
-        a - b = a + (~b+1)
-        ~b+1 = 0xFF800000
-        So :
-        a + b = 0x00a00000 + 0xFF800000 = 100200000
-        And this is not what we want
-        */
 
         if(sign_a) //case where a is neg, so b pos
-            mantice_result = mantice_b_new + ((~mantice_a_new+1) & 0x7FFFFF);
+            mantice_a_new = ~mantice_a_new + 1;
         else // case where a is pos, so b neg
-            mantice_result = mantice_a_new + ((~mantice_b_new+1) & 0x7FFFFF) ;
+            mantice_b_new = ~mantice_b_new + 1;
+
+
+        printf("mantice a after : %x\n", mantice_a_new);
+        printf("mantice b after : %x\n", mantice_b_new);
+
+        // add a 32 bit and a 24 bit number
+        mantice_result = (mantice_a_new + mantice_b_new) ;
 
         printf("Mantice result is : %x\n",mantice_result );
-
-        // Mantice result can overflow
-        // So been on 24 bits, in this case we want to keep only the msb
-
-
-        if((mantice_result >>24 ) == 1)
-            mantice_result = mantice_result >> 1;
-        else
-            mantice_result &= 0x7FFFFF ;
-
+    
+  
+        
         if(mantice_a > mantice_b && exposant_a > exposant_b )
             sign_result = sign_a ;
         else 
-            sign_result = sign_b ;    
+            sign_result = sign_b ;
+
+
         printf(" result is :\n result_exp : %x\n result mantice : %x\n", result_exponent, mantice_result);
         int result = mantice_result | (result_exponent << 23) | (sign_result << 31);
         printf("resultat calculated is : %x\n", result);
